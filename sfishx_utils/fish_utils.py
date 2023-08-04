@@ -49,7 +49,7 @@ class Fish_utils:
             self.fish_folder = folder
     
     
-    def get_E(self, spec):
+    def get_E(self, spec, npt):
         """ get Euclid alone fisher matrices
 
             Args:
@@ -58,10 +58,10 @@ class Fish_utils:
 
         cosmo_model = set_model(self.model, self.fiducial, self.param_labels)
 
-        return euclid_alone(self.fish_folder_euclid_alone, self.stephane, self.steph_model, spec, cosmo_model)
+        return euclid_alone(self.fish_folder_euclid_alone, self.stephane, self.steph_model, spec, cosmo_model, npt)
 
 
-    def get_Ecmb(self, spec, cmb, mode, probes=None):
+    def get_Ecmb(self, spec, cmb, mode, npt, probes=None):
         """ get Euclid combined with CMB fisher matrices
 
             Args:
@@ -78,9 +78,9 @@ class Fish_utils:
         """
 
         cosmo_model = set_model(self.model, self.fiducial, self.param_labels)
-        return euclid_cmb(self.fish_folder, self.stephane, self.steph_model, spec, cmb, mode, cosmo_model, probes)
+        return euclid_cmb(self.fish_folder, self.stephane, self.steph_model, spec, cmb, mode, cosmo_model, npt, probes)
 
-    def get_cmb(self, cmb, probes=None):
+    def get_cmb(self, cmb, npt, probes=None):
         """ get CMB alone fisher matrices
 
             Args:
@@ -92,7 +92,7 @@ class Fish_utils:
         """
 
         cosmo_model = set_model(self.model, self.fiducial, self.param_labels)
-        return cmb_alone(self.fish_folder, self.stephane, self.steph_model, cmb, cosmo_model, probes)
+        return cmb_alone(self.fish_folder, self.stephane, self.steph_model, cmb, cosmo_model, npt, probes)
 
 
 def set_model(model, fiducial, param_labels):
@@ -112,7 +112,7 @@ def set_model(model, fiducial, param_labels):
     
     return model_dict
 
-def euclid_alone(fish_folder, stephane, steph_model, spec, model):
+def euclid_alone(fish_folder, stephane, steph_model, spec, model, npt):
 
     Euclid_alone = {
         'spec' : spec,
@@ -124,7 +124,7 @@ def euclid_alone(fish_folder, stephane, steph_model, spec, model):
     if stephane:
         Euclid_alone['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_" + steph_model + "_" + "max-bins_super-prec_21point.npz")
     else:
-        Euclid_alone['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_flat_" + "max-bins_super-prec_21point.npz")
+        Euclid_alone['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_flat_" + "max-bins_super-prec_" + npt + ".npz")
 
     fish = np.load(Euclid_alone['file'])
     Euclid_alone['fish_file'] = fish
@@ -146,7 +146,7 @@ def euclid_alone(fish_folder, stephane, steph_model, spec, model):
 
     return Euclid_alone
 
-def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, probes = None):
+def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, npt, probes = None):
     
     """
      mode means the way we combine the probes
@@ -167,12 +167,12 @@ def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, probe
         if probes == 'phionly':
             Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMBphionly-" + cmb + "_mode-" + mode + "_" + steph_model + "_max-bins_super-prec_21point.npz")
         else:
-            Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "_mode-" + mode + "_" + steph_model + "_max-bins_super-prec_21point.npz")
+            Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "_mode-" + mode + "_" + steph_model + "_max-bins_super-prec_" + npt + ".npz")
     else:
         if probes == 'phionly':
-            Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMBphionly-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_21point.npz")
+            Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMBphionly-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_" + npt + ".npz")
         else:
-            Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_21point.npz")
+            Euclid_cmb['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_" + npt + ".npz")
 
     if probes == 'phionly':
         if mode == 'p' or mode =='a':
@@ -206,7 +206,7 @@ def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, probe
     return Euclid_cmb
 
 
-def cmb_alone(fish_folder, stephane, steph_model, cmb, model, probes):
+def cmb_alone(fish_folder, stephane, steph_model, cmb, model, npt, probes):
 
     cmb_alone = {
         'cmb' : cmb,
@@ -220,12 +220,12 @@ def cmb_alone(fish_folder, stephane, steph_model, cmb, model, probes):
         if stephane:
             cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + probes + "-" + cmb + "_" + steph_model + "_max-bins_super-prec_21point.npz")
         else:
-            cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + cmb + "_flat_max-bins_super-prec_21point.npz")
+            cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + cmb + "_flat_max-bins_super-prec_" + npt + ".npz")
     else:
         if stephane:
-            cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + cmb + "_" + steph_model + "_max-bins_super-prec_21point.npz")
+            cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + cmb + "_" + steph_model + "_max-bins_super-prec_" + npt + ".npz")
         else:
-            cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + cmb + "_flat_max-bins_super-prec_21point.npz")
+            cmb_alone['file'] = os.path.join(fish_folder, "fish_CMB-" + cmb + "_flat_max-bins_super-prec_" + npt + ".npz")
     
     fish = np.load(cmb_alone['file'])
     cmb_alone['fish_file'] = fish
