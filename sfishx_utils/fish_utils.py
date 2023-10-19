@@ -209,7 +209,8 @@ def build_dict(filename, model, spec = None):
     fish_dict['wid'] = fish['wid']
     fish_dict['prec'] = fish['prec']
     fish_dict['param_names'] = fish['all_params']
-    fish_dict['param_names'] = ['om', 'ob', 'h', 'ns', 'sigma8', 'tau']
+    if b'om' in fish_dict['param_names']:
+        fish_dict['param_names'] = ['om', 'ob', 'h', 'ns', 'sigma8', 'tau']
 
     param_labels = latex_pnames(fish_dict['param_names'])
 
