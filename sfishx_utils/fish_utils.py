@@ -76,6 +76,7 @@ class Fish_utils:
         cosmo_model = set_model(self.model)
         return euclid_cmb(self.fish_folder, self.stephane, self.steph_model, spec, cmb, mode, cosmo_model, npt, dr1fsky, pr4, probes)
 
+
     def get_cmb(self, cmb, npt, probes=None):
         """ get CMB alone fisher matrices
 
@@ -103,6 +104,7 @@ def set_model(model):
     
     return model_dict
 
+
 def euclid_alone(fish_folder, stephane, steph_model, spec, model, npt, dr1fsky):
 
     if stephane:
@@ -118,6 +120,7 @@ def euclid_alone(fish_folder, stephane, steph_model, spec, model, npt, dr1fsky):
     Euclid_alone['label'] = '3x2pt Euclid ' + spec,
 
     return Euclid_alone
+
 
 def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, npt, dr1fsky, pr4, probes = None):
     
@@ -208,7 +211,6 @@ def build_dict(filename, model, spec = None):
     fish_dict['param_names'] = fish['all_params']
     fish_dict['param_names'] = ['om', 'ob', 'h', 'ns', 'sigma8', 'tau']
 
-
     param_labels = latex_pnames(fish_dict['param_names'])
 
     fish_dict['param_labels'] = param_labels
@@ -229,7 +231,6 @@ def build_dict(filename, model, spec = None):
                           labels = param_labels
                           )
     fish_dict['FMsample'] = FMsample
-
 
     return fish_dict
 
