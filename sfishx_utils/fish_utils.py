@@ -43,6 +43,9 @@ class Fish_utils:
         else:
             self.fish_folder_euclid_alone = folder
             self.fish_folder = folder
+        self.fish_folder_euclid_alone = folder
+        self.fish_folder = folder
+
     
     
     def get_E(self, spec, npt, dr1fsky):
@@ -212,7 +215,7 @@ def build_dict(filename, model, spec = None):
     if b'om' in fish_dict['param_names']:
         fish_dict['param_names'] = ['om', 'ob', 'h', 'ns', 'sigma8', 'tau']
 
-    param_labels = latex_pnames(fish_dict['param_names'])
+    param_labels = latex_pnames(fish_dict['param_names'], model)
 
     fish_dict['param_labels'] = param_labels
 
@@ -236,7 +239,7 @@ def build_dict(filename, model, spec = None):
     return fish_dict
 
 
-def latex_pnames(pnames):
+def latex_pnames(pnames, model):
     latex_list = []
     for p in pnames:
         if (p == 'ob') or (p == b'ob'):
@@ -244,6 +247,12 @@ def latex_pnames(pnames):
 
         if (p == 'om') or (p == b'om'):
             latex_list.append(r"\Omega_{\rm m}")
+
+        if (p == 'w0') or (p == b'w0'):
+            latex_list.append(r"w_0")
+
+        if (p == 'wa') or (p == b'wa'):
+            latex_list.append(r"w_{\rm a}")
 
         if (p == 'sigma8') or (p == b'sigma8'):
             latex_list.append(r"\sigma_8")
@@ -261,7 +270,10 @@ def latex_pnames(pnames):
             latex_list.append(r"\Delta")
 
         if p == 'gamma_IG':
-            latex_list.append(r"\xi")
+            if model['model'].lower() == 'ig':
+                latex_list.append(r"\gamma")
+            else:
+                latex_list.append(r"\xi")
 
         if p == 'mnu':
             latex_list.append(r"m_{\nu}")
