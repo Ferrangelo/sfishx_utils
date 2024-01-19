@@ -152,7 +152,10 @@ def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, npt, 
                 else:
                     filename = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMBphionly-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_" + npt + ".npz")
         else:
-            filename = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_" + npt + ".npz")
+            if pr4:
+                filename = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "PR4_mode-" + mode + "_flat_max-bins_super-prec_" + npt + ".npz")
+            else:
+                filename = os.path.join(fish_folder, "fish_Euclid-" + spec + "_CMB-" + cmb + "_mode-" + mode + "_flat_max-bins_super-prec_" + npt + ".npz")
 
     if probes == 'phionly':
         if mode == 'p' or mode =='a':
