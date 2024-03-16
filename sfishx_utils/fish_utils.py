@@ -288,10 +288,11 @@ def latex_pnames(pnames, model):
             latex_list.append(r"\Delta")
 
         if p == 'gamma_IG':
-            if model['model'].lower() == 'ig':
-                latex_list.append(r"\gamma")
-            else:
-                latex_list.append(r"\xi")
+            latex_list.append(r"\xi")
+            # if model['model'].lower() == 'ig':
+                # latex_list.append(r"\gamma")
+            # else:
+                # latex_list.append(r"\xi")
 
         if p == 'mnu':
             latex_list.append(r"m_{\nu}")
