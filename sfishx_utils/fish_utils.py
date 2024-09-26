@@ -1,23 +1,24 @@
-import os, sys
+import os
+import sys
 import numpy as np
 from getdist import plots, loadMCSamples
 from getdist.gaussian_mixtures import GaussianND
 import getdist
 
-class Fish_utils:
+class FishUtils:
+    """ 
+    Utilities to read the fisher matrices
 
-    """ Utilities to read the fisher matrices
-
-        Args:
-            folder: folder where to look for fishers, overridden if stephane = True
-            model (string): String identifying the model (LCDM, IG, NMCxpDelta)
-            fiducial (dict): name and values of parameters in fiducial cosmology
-            param_labels (array): array with names of params in latex (e.g. r"\Omega_{\rm}")
-            steph_model: name of the model in Stephan fisher that appears in the file name of the fishers
-                        (flat_LCDM usually but options for w0wa also)
-            stephane (bool, defaults to False): Use Stephane fishers or not
-            stephane_tau (bool, defaults to False): Use Stephane Euclid fishers with tau or without tau
-    """
+    Args:
+        folder: folder where to look for fishers, overridden if stephane = True
+        model (string): String identifying the model (LCDM, IG, NMCxpDelta)
+        fiducial (dict): name and values of parameters in fiducial cosmology
+        param_labels (array): array with names of params in latex (e.g. r"\Omega_{\rm}")
+        steph_model: name of the model in Stephan fisher that appears in the file name of the fishers
+                    (flat_LCDM usually but options for w0wa also)
+        stephane (bool, defaults to False): Use Stephane fishers or not
+        stephane_tau (bool, defaults to False): Use Stephane Euclid fishers with tau or without tau
+     """
 
     def __init__(
         self, 
