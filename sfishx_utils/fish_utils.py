@@ -224,7 +224,7 @@ def build_dict(filename, model, spec = None):
         'model_tex': model['model_tex']
     }
 
-    fish = np.load(filename, allow_pickle=True)
+    fish = np.load(filename, allow_pickle=True, encoding='latin1')
 
     fish_dict['fish_file'] = fish
     fish_dict['fish'] = fish['fish']
@@ -306,7 +306,7 @@ def latex_pnames(pnames, model):
                 # latex_list.append(r"\xi")
 
         if p == 'mnu':
-            latex_list.append(r"m_{\nu}")
+            latex_list.append(r"\sum m_{\nu} [{\rm eV}]")
 
         if p == 'aIA':
             latex_list.append(r"a_{\rm IA}")
