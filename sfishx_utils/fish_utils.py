@@ -4,6 +4,8 @@ import numpy as np
 from getdist import plots, loadMCSamples
 from getdist.gaussian_mixtures import GaussianND
 import getdist
+from cosette.varie import latex_pnames
+import flint
 
 class FishUtils:
     """ 
@@ -49,7 +51,7 @@ class FishUtils:
 
     
     
-    def get_E(self, spec, npt, dr1fsky, file_name = None):
+    def get_euclid(self, spec, npt, dr1fsky, fix_tau = False, file_name = None):
         """ get Euclid alone fisher matrices
 
             Args:
@@ -58,27 +60,31 @@ class FishUtils:
 
         cosmo_model = set_model(self.model)
 
-        return euclid_alone(self.fish_folder_euclid_alone, self.stephane, self.steph_model, spec, cosmo_model, npt, dr1fsky, file_name = file_name)
+        return euclid_alone(self.fish_folder_euclid_alone, self.stephane, self.steph_model, spec, cosmo_model, npt, dr1fsky, fix_tau = fix_tau, file_name = file_name)
 
 
-    def get_Ecmb(self, spec, cmb, mode, npt, dr1fsky, pr4, probes=None, file_name = None):
-        """ get Euclid combined with CMB fisher matrices
-
-            Args:
-                spec (string): Euclid specifications (opti or pess)
-                cmb (string): CMB experiment (planck, SO or S4)
-                mode (string): way of combining CMB with euclid (p, a or c)
-                               p ("plus")  == CMB + Euclid as independent probes
-                               a ("add")   == proper CMBxEuclid covariance but no cross-probes in data
-                               c ("cross") == full CMBxEucld covariance and data
-                probes (string, defaults to None): CMB probes to consider. 
-                                                   Options are None or 'phionly'. If None it uses
-                                                   all CMB probes (TTTEEElens), if 'phionly' it 
-                                                   consider only CMBlensing
+    def get_euclid_cmb(self, spec, cmb, mode, npt, dr1fsky, pr4, probes=None, fix_tau = False, file_name = None):
+        """
+        Get Euclid combined with CMB fisher matrices.
+        
+        Args:
+            spec (str): Euclid specifications (opti or pess).
+            cmb (str): CMB experiment (planck, SO or S4).
+            mode (str): Way of combining CMB with Euclid (p, a or c):
+                - "p" ("plus"): CMB + Euclid as independent probes.
+                - "a" ("add"): Proper CMBxEuclid covariance but no cross-probes in data.
+                - "c" ("cross"): Full CMBxEucld covariance and data.
+            probes (str, optional): CMB probes to consider. Options are None or 'phionly'. 
+                If None, it uses all CMB probes (TTTEEElens). If 'phionly', it considers only CMBlensing.
+            fix_tau (bool, optional): Whether to fix the optical depth parameter tau in the fishers.
+            file_name (str, optional): Custom file name for the fisher matrix.
         """
 
+        if probes == 'phionly':
+            fix_tau = False
+
         cosmo_model = set_model(self.model)
-        return euclid_cmb(self.fish_folder, self.stephane, self.steph_model, spec, cmb, mode, cosmo_model, npt, dr1fsky, pr4, probes, file_name = file_name)
+        return euclid_cmb(self.fish_folder, self.stephane, self.steph_model, spec, cmb, mode, cosmo_model, npt, dr1fsky, pr4, probes, fix_tau = fix_tau, file_name = file_name)
 
 
     def get_cmb(self, cmb, npt, probes=None, pr4=False, file_name = None):
@@ -97,6 +103,9 @@ class FishUtils:
 
 
 def set_model(model):
+    """
+    Sets a dictionary of model parameters based on the input model string. The dictionary includes the model name and its LaTeX representation.
+    """
     model_dict = {'model' : model}
 
     if model.lower() == 'lcdm':
@@ -111,7 +120,24 @@ def set_model(model):
     return model_dict
 
 
-def euclid_alone(fish_folder, stephane, steph_model, spec, model, npt, dr1fsky, file_name = None):
+def euclid_alone(fish_folder, stephane, steph_model, spec, model, npt, dr1fsky, fix_tau = False, file_name = None):
+    """
+    Compute the Euclid-alone Fisher matrix.
+
+    Args:
+        fish_folder (str): Path to the folder containing the Fisher matrix files.
+        stephane (bool): Whether to use the Stephane fishers.
+        steph_model (str): The model name for the Stephane fishers..
+        spec (str): The Euclid survey specification.
+        model (str): The cosmological model.
+        npt (str): The number of points used in the Fisher matrix.
+        dr1fsky (bool): Whether to use the DR1 sky fraction.
+        fix_tau (bool, optional): Whether to fix the optical depth parameter tau in the fishers.
+        file_name (str, optional): Custom file name for the Fisher matrix.
+
+    Returns:
+        dict: A dictionary containing the Euclid-alone Fisher matrix.
+    """
 
     if stephane:
         # Euclid_alone['file'] = os.path.join(fish_folder, "fish_Euclid-" + spec + "_" + steph_model + "_" + "max-bins_super-prec_21point.npz")
@@ -126,13 +152,13 @@ def euclid_alone(fish_folder, stephane, steph_model, spec, model, npt, dr1fsky, 
         else:
             filename = os.path.join(fish_folder, "fish_Euclid-" + spec + "_flat_" + "max-bins_super-prec_" + npt + ".npz")
     
-    Euclid_alone = build_dict(filename, model, spec)
-    Euclid_alone['label'] = "$3\times 2$pt Euclid " + spec,
+    euclid_alone_dict = build_dict(filename, model, spec, fix_tau)
+    euclid_alone_dict['label'] = "$3\times 2$pt Euclid " + spec,
 
-    return Euclid_alone
+    return euclid_alone_dict
 
 
-def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, npt, dr1fsky, pr4, probes = None, file_name = None):
+def euclid_cmb(fish_folder, stephane, steph_model, spec, cmb, mode, model, npt, dr1fsky, pr4, probes = None, fix_tau = False, file_name = None):
     
     """
      mode means the way we combine the probes
@@ -218,7 +244,7 @@ def cmb_alone(fish_folder, stephane, steph_model, cmb, model, npt, probes, pr4=F
     return cmb_alone
 
 
-def build_dict(filename, model, spec = None):
+def build_dict(filename, model, spec = None, fix_tau = False):
     fish_dict = {
         'spec' : spec,
         'model' : model['model'],
@@ -241,7 +267,7 @@ def build_dict(filename, model, spec = None):
             fish_dict['all_params'][i] = 'delta_IG'
 
     print(fish_dict['all_params'])
-    param_labels = latex_pnames(fish_dict['all_params'], model)
+    param_labels = latex_pnames(fish_dict['all_params'])
     print(param_labels)
 
     fish_dict['param_labels'] = param_labels
@@ -266,141 +292,61 @@ def build_dict(filename, model, spec = None):
     fish_dict['all_obs'] = fish['all_obs']
     fish_dict['ell_ranges'] = fish['ell_ranges']
 
+    if fix_tau:
+        return fix_tau_dict(fish_dict)
+    else:
+        return fish_dict
+
+def fix_tau_dict(fish_dict):
+
+    index_tau = np.where(fish_dict['all_params'] == 'tau')[0][0]
+    fish_dict['all_params'] = np.delete(fish_dict['all_params'], index_tau)
+    print(fish_dict['all_params'])
+
+    fish_mat = np.delete(fish_dict['fish'], [index_tau], 0)
+    fish_mat = np.delete(fish_mat, [index_tau], 1)
+    fish_dict['fish'] = fish_mat
+
+    cov_mat = np.linalg.inv(fish_mat)
+
+    alt_fish = flint.arb_mat(fish_mat.shape[0], fish_mat.shape[1], fish_mat.flatten())
+    alt_ifish = alt_fish.inv()
+    flint_cov = np.array([float(ent) for ent in alt_ifish.entries()])
+    flint_cov = flint_cov.reshape(fish_mat.shape[0], fish_mat.shape[1])
+
+    fish_dict['cov'] = cov_mat
+
+    wid = np.sqrt(np.diag(cov_mat))
+    wid_flint = np.sqrt(np.diag(flint_cov))
+    # assert np.allclose(wid, wid_flint)
+
+    fish_dict['me'] = np.delete(fish_dict['me'], index_tau)
+    fish_dict['wid'] = wid_flint
+
+    prec = np.abs(fish_dict['wid'] / fish_dict['me'])
+    for i, p in enumerate(fish_dict['all_params']):
+        if fish_dict['me'][i] == 0.: # Special case to avoid infinite "prec"
+            prec[i] = wid_flint[i]
+    fish_dict['prec'] = prec
+
+    param_labels = latex_pnames(fish_dict['all_params'])
+    fish_dict['param_labels'] = param_labels
+    print(fish_dict['param_labels'])
+
+    fish_dict['fiducial'] = {}
+    for i, p in enumerate(fish_dict['all_params']):
+        fish_dict['fiducial'][p] = fish_dict['me'][i]
+
+    if len(param_labels) != len(fish_dict['all_params']):
+        print("Error, the lenght of param_labels is different form the length of param names\n"
+              "You probably passed a fisher with a parameter not contemplated by the function latex_pnames")
+        sys.exit()
+
+    FMsample = GaussianND(fish_dict['me'], fish_dict['fish'],
+                          is_inv_cov=True,
+                          names = fish_dict['all_params'],
+                          labels = fish_dict['param_labels']
+                          )
+    fish_dict['FMsample'] = FMsample
+
     return fish_dict
-
-
-def latex_pnames(pnames, model):
-    latex_list = []
-    for p in pnames:
-        if (p == 'ob') or (p == b'ob'):
-            latex_list.append(r"\Omega_{\rm b}")
-
-        if (p == 'om') or (p == b'om'):
-            latex_list.append(r"\Omega_{\rm m}")
-
-        if (p == 'w0') or (p == b'w0'):
-            latex_list.append(r"w_0")
-
-        if (p == 'wa') or (p == b'wa'):
-            latex_list.append(r"w_{\rm a}")
-
-        if (p == 'sigma8') or (p == b'sigma8'):
-            latex_list.append(r"\sigma_8")
-
-        if (p == 'tau') or (p == b'tau'):
-            latex_list.append(r"\tau")
-            
-        if (p == 'ns') or (p == b'ns'):
-            latex_list.append(r"n_{\rm s}")
-
-        if (p == 'h') or (p == b'h'):
-            latex_list.append(r"h")
-
-        if (p == 'delta_IG') or (p == 'Delta'):
-            latex_list.append(r"\Delta")
-
-        if p == 'gamma_IG':
-            latex_list.append(r"\xi")
-            # if model['model'].lower() == 'ig':
-                # latex_list.append(r"\gamma")
-            # else:
-                # latex_list.append(r"\xi")
-
-        if p == 'mnu':
-            latex_list.append(r"\sum m_{\nu} [{\rm eV}]")
-
-        if p == 'aIA':
-            latex_list.append(r"a_{\rm IA}")
-
-        if p == 'eIA':
-            latex_list.append(r"e_{\rm IA}")
-
-        if p == 'bIA':
-            latex_list.append(r"b_{\rm IA}")
-
-        if p == 'b0':
-            latex_list.append(r"b_{0}")
-
-        if p == 'b1':
-            latex_list.append(r"b_{1}")
-
-        if p == 'b2':
-            latex_list.append(r"b_{2}")
-
-        if p == 'b3':
-            latex_list.append(r"b_{3}")
-
-        if p == 'b4':
-            latex_list.append(r"b_{4}")
-
-        if p == 'b5':
-            latex_list.append(r"b_{5}")
-
-        if p == 'b6':
-            latex_list.append(r"b_{6}")
-
-        if p == 'b7':
-            latex_list.append(r"b_{7}")
-
-        if p == 'b8':
-            latex_list.append(r"b_{8}")
-
-        if p == 'b9':
-            latex_list.append(r"b_{9}")
-
-        if p == 'b10':
-            latex_list.append(r"b_{10}")
-
-        if p == 'b11':
-            latex_list.append(r"b_{11}")
-
-        if p == 'b12':
-            latex_list.append(r"b_{12}")
-
-        if p == 'b13':
-            latex_list.append(r"b_{13}")
-
-        if p == 'm0':
-            latex_list.append(r"m_{0}")
-
-        if p == 'm1':
-            latex_list.append(r"m_{1}")
-
-        if p == 'm2':
-            latex_list.append(r"m_{2}")
-
-        if p == 'm3':
-            latex_list.append(r"m_{3}")
-
-        if p == 'm4':
-            latex_list.append(r"m_{4}")
-
-        if p == 'm5':
-            latex_list.append(r"m_{5}")
-
-        if p == 'm6':
-            latex_list.append(r"m_{6}")
-
-        if p == 'm7':
-            latex_list.append(r"m_{7}")
-
-        if p == 'm8':
-            latex_list.append(r"m_{8}")
-
-        if p == 'm9':
-            latex_list.append(r"m_{9}")
-
-        if p == 'm10':
-            latex_list.append(r"m_{10}")
-
-        if p == 'm11':
-            latex_list.append(r"m_{11}")
-
-        if p == 'm12':
-            latex_list.append(r"m_{12}")
-
-        if p == 'm13':
-            latex_list.append(r"m_{13}")
-
-
-    return latex_list
