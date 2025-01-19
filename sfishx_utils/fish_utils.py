@@ -108,14 +108,17 @@ def set_model(model):
     """
     model_dict = {'model' : model}
 
-    if model.lower() == 'lcdm':
-        model_dict['model_tex'] = r'$\Lambda \rm CDM$'
-    if model.lower() == 'ig':
-        model_dict['model_tex'] = r'$\rm IG$'
-    if model.lower() == 'nmcxpdelta':
-        model_dict['model_tex'] = r'${\rm NMC}+ (\xi, \Delta)$'
-    if model.lower() == 'w0wa':
-        model_dict['model_tex'] = r'$w_0w_a$CDM'
+    match model.lower():
+        case s if s.startswith('lcdm'):
+            model_dict['model_tex'] = r'$\Lambda \rm CDM'
+        case s if s.startswith('ig'):
+            model_dict['model_tex'] = r'$\rm IG'
+        case s if s.startswith('nmcxpdelta'):
+            model_dict['model_tex'] = r'${\rm NMC}+ (\xi, \Delta)'
+        case s if s.startswith('w0wa'):
+            model_dict['model_tex'] = r'$w_0w_a$CDM'
+        case _:
+            model_dict['model_tex'] = r'Undefined'
     
     return model_dict
 
