@@ -6,11 +6,11 @@ build-backend = "hatchling.build"
 name = "sfishx_utils"
 version = "0.0.1"
 authors = [
-  { name="Angelo Ferrari", email="anferrar@bo.infn.it" },
+  { name="Angelo Ferrari", email="angeloferrari@pm.me" },
 ]
-description = "Scripts to plot the Fisher matrices obtained from SFX_CLASs"
+description = "Scripts to plot the Fisher matrices obtained from SFX_CLASS"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -20,9 +20,6 @@ dependencies = [
     "scipy",
     "matplotlib",
     "getdist",
+    "python-flint"
     # Add any other required packages here
 ]
-
-# [project.urls]
-# Homepage = "https://github.com/pypa/sampleproject"
-# Issues = "https://github.com/pypa/sampleproject/issues"

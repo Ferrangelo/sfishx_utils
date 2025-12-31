@@ -353,3 +353,17 @@ def fix_tau_dict(fish_dict):
     fish_dict['FMsample'] = FMsample
 
     return fish_dict
+
+def w0wa_indices(fish_dict):
+    list_all_params = [par for par in fish_dict['all_params']]
+    indw0 = list_all_params.index('w0')
+    indwa = list_all_params.index('wa')
+    return [indw0, indwa]
+
+def w0wa_fom(fish_dict):
+    indices = w0wa_indices(fish_dict)
+    print(indices)
+    cov = fish_dict['cov']
+    cov_2x2 = cov[np.ix_(indices, indices)]
+    fom = 1./np.sqrt(np.linalg.det(cov_2x2))
+    return fom
