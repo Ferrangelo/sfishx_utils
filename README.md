@@ -1,6 +1,6 @@
 ### Cosette
 
-A small package containg scripts to plot the fisher matrices produced by SFX_CLASS.
+A small package containing scripts to plot the fisher matrices produced by SFX_CLASS.
 
 #### Installation
 
