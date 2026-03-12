@@ -1,6 +1,6 @@
-### Cosette
+### sfishx_utils
 
-A small package containing scripts to plot the fisher matrices produced by SFX_CLASS.
+A package containing scripts to plot the fisher matrices produced by SFX_CLASS.
 
 #### Installation
 
